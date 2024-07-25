@@ -1,0 +1,6 @@
+argparse~=1.4.0
+numpy==2.0.0
+ovirt-engine-sdk-python==4.6.1
+pandas==2.2.2
+pyinstaller==6.9.0
+XlsxWriter==3.2.0
