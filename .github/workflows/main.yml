@@ -36,5 +36,5 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: ${{matrix.SAVE_AS_NAME}}
-        path: ./dist/${{matrix.OUT_FILE_NAME}}
+        path: /home/runner/work/dist/${{matrix.OUT_FILE_NAME}}
         retention-days: 7
