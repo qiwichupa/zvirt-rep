@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-19.04
+          - os: ubuntu-20.04
             PYTHON_VER: 3.11
             CMD_BUILD: pyinstaller -F -c -n zvirt-rep zvirt-rep.py
             OUT_FILE_NAME: zvirt-rep
