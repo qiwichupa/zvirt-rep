@@ -16,8 +16,8 @@ jobs:
           - os: ubuntu-20.04
             PYTHON_VER: 3.11
             CMD_BUILD: pyinstaller -F -c -n zvirt-rep zvirt-rep.py
-            OUT_FILE_NAME: zvirt-rep.bin
-            SAVE_AS_NAME: zvirt-rep_x64.bin
+            OUT_FILE_NAME: zvirt-rep
+            SAVE_AS_NAME: zvirt-rep
     steps:
     - name: Clone
       uses: actions/checkout@v3
@@ -36,5 +36,5 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: ${{matrix.SAVE_AS_NAME}}
-        path: /home/runner/work/dist/${{matrix.OUT_FILE_NAME}}
+        path: /home/runner/work/zvirt-rep/zvirt-rep/dist/zvirt-rep
         retention-days: 7
