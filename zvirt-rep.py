@@ -8,7 +8,6 @@ import argparse
 import ovirtsdk4 as sdk
 import ovirtsdk4.types as types
 import pandas as pd
-import openpyxl
 
 
 def call_method(o, name):
