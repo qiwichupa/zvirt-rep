@@ -1,0 +1,40 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      
+jobs:
+  build:
+    name: Build packages
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-2019
+            PYTHON_VER: 3.10
+            CMD_BUILD: pyinstaller -F -c -n ffeasytool ffeasytool.py
+            OUT_FILE_NAME: ffeasytool.exe
+            SAVE_AS_NAME: ffeasytool_x64.exe
+    steps:
+    - name: Clone
+      uses: actions/checkout@v3
+    - name: Set up Python ${{matrix.PYTHON_VER}}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{matrix.PYTHON_VER}}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        pip install -r requirements.txt
+    - name: Build with pyinstaller for ${{matrix.os}}
+      run: ${{matrix.CMD_BUILD}}
+    - name: Upload
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{matrix.SAVE_AS_NAME}}
+        path: ./dist/${{matrix.OUT_FILE_NAME}}
+        retention-days: 7
