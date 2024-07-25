@@ -15,9 +15,9 @@ jobs:
         include:
           - os: windows-2019
             PYTHON_VER: 3.10
-            CMD_BUILD: pyinstaller -F -c -n ffeasytool ffeasytool.py
-            OUT_FILE_NAME: ffeasytool.exe
-            SAVE_AS_NAME: ffeasytool_x64.exe
+            CMD_BUILD: pyinstaller -F -c -n zvirt-rep zvirt-rep.py
+            OUT_FILE_NAME: zvirt-rep.exe
+            SAVE_AS_NAME: zvirt-rep_x64.exe
     steps:
     - name: Clone
       uses: actions/checkout@v3
