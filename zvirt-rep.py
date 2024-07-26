@@ -8,6 +8,7 @@ import argparse
 import ovirtsdk4 as sdk
 import ovirtsdk4.types as types
 import pandas as pd
+#import openpyxl
 
 
 def call_method(o, name):
@@ -23,7 +24,7 @@ def dics_to_df(dics):
             df = pd.DataFrame.from_dict(dic, orient='index').transpose()
         else:
             df2 = pd.DataFrame.from_dict(dic, orient='index').transpose()
-            df = df._append(df2, ignore_index = True)
+            df = pd.concat([df, df2], ignore_index = True)
     try:
         df = df.astype(str)
         # удаление лишних столбцов, содержащих нераскрытый объект типа ovirtsdk4
@@ -107,18 +108,19 @@ def get_service_df(name):
     slist = service.list()
     for obj in slist:
         objstats = vars(obj)
-        allstats = get_custom_stat(name, obj) | objstats
+        customstats = get_custom_stat(name, obj)
+        allstats = {**customstats, **objstats}
         dics += [allstats]
     df = dics_to_df(dics)
     return(df)
 
-parser = argparse.ArgumentParser(description='%(prog)s - reporting tool for zvirt')
-parser.add_argument('-s', type=str,required=True, metavar='zvirt.domain.loc', help='Zvirt engine fqdn or ip')
-parser.add_argument('-u', type=str,required=True, metavar='user@domain', help='Zvirt engine login')
-parser.add_argument('-p', type=str,required=True, metavar='password', help='Zvirt engine password')
-parser.add_argument('file', nargs=1, metavar='outfile.xlsx', help='path to outfile (Ex.: /tmp/zvirt_report.xlsx)')
+ver = '1.0.0'
+parser = argparse.ArgumentParser(description='%(prog)s - reporting tool for zvirt. (v.{})'.format(ver))
+parser.add_argument('-s', type=str,required=True, metavar='zvirt.dom', help='Zvirt engine fqdn or ip')
+parser.add_argument('-u', type=str,required=True, metavar='user@dom', help='Zvirt engine login')
+parser.add_argument('-p', type=str,required=True, metavar='pass', help='Zvirt engine password')
+parser.add_argument('file', nargs=1, metavar='out.xlsx', help='path to outfile (Ex.: /tmp/zvirt_report.xlsx)')
 args = parser.parse_args()
-
 
 if args.file[0].endswith('.xlsx'):
     outfile=args.file[0]
@@ -174,7 +176,7 @@ maskedservices = [
 # кастомные "сервисы" не из числа стандартных, с отдельной обработкой
 customservices = [ 'nics_service' ]
 
-logging.basicConfig(level=logging.DEBUG, filename='olvmsdk.log')
+logging.basicConfig(level=logging.WARN, filename='/tmp/zvirt-rep.log')
 
 # параметры подключения к звирту
 connection = sdk.Connection(
@@ -220,5 +222,3 @@ for service in srvnames:
                 print(e)
 
 writer.close()
-
-connection.close()
