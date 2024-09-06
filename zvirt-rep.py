@@ -8,7 +8,6 @@ import argparse
 import ovirtsdk4 as sdk
 import ovirtsdk4.types as types
 import pandas as pd
-#import openpyxl
 
 
 def call_method(o, name):
@@ -33,6 +32,28 @@ def dics_to_df(dics):
     except Exception as e:
         print('Exception: dic_to_df: {}'.format(e))
     return(df)
+
+def get_vm_ips(vm):
+    '''Принимает объект из vms_service и возвращает все IP-адреса строкой'''
+    ips=[]
+    vms_service = connection.system_service().vms_service()
+    vm_service = vms_service.vm_service(vm.id)
+    reported_devices_service = vm_service.reported_devices_service()
+    for rds in reported_devices_service.list():
+        for ip in rds.ips:
+            ips.append(ip.address)
+    return(', '.join(ips))
+
+
+def get_vm_macs(vm):
+    '''Принимает объект из vms_service и возвращает все MAC-адреса строкой'''
+    macs=[]
+    vms_service = connection.system_service().vms_service()
+    vm_service = vms_service.vm_service(vm.id)
+    reported_devices_service = vm_service.reported_devices_service()
+    for rds in reported_devices_service.list():
+        macs.append(rds.mac.address)
+    return(', '.join(macs))
 
 
 def get_custom_service_df(name):
@@ -96,6 +117,11 @@ def get_custom_stat(name, obj):
         for tag in tags_service.list():
             tags = '{};{}'.format(tag.name, tags)
         dic['vm_tags'] = tags
+
+        # сетевые настройки
+        dic['vm_ips'] = get_vm_ips(obj)
+        dic['vm_macs'] = get_vm_macs(obj)
+
     return(dic)
 
 
@@ -114,13 +140,14 @@ def get_service_df(name):
     df = dics_to_df(dics)
     return(df)
 
-ver = '1.0.0'
+ver = '1.1.0'
 parser = argparse.ArgumentParser(description='%(prog)s - reporting tool for zvirt. (v.{})'.format(ver))
 parser.add_argument('-s', type=str,required=True, metavar='zvirt.dom', help='Zvirt engine fqdn or ip')
 parser.add_argument('-u', type=str,required=True, metavar='user@dom', help='Zvirt engine login')
 parser.add_argument('-p', type=str,required=True, metavar='pass', help='Zvirt engine password')
 parser.add_argument('file', nargs=1, metavar='out.xlsx', help='path to outfile (Ex.: /tmp/zvirt_report.xlsx)')
 args = parser.parse_args()
+
 
 if args.file[0].endswith('.xlsx'):
     outfile=args.file[0]
@@ -222,3 +249,5 @@ for service in srvnames:
                 print(e)
 
 writer.close()
+
+connection.close()
