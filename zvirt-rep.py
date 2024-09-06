@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+#
+# https://github.com/qiwichupa/zvirt-rep
+#
 
 # -*- coding: utf-8 -*-
 
@@ -33,7 +36,7 @@ def dics_to_df(dics):
         print('Exception: dic_to_df: {}'.format(e))
     return(df)
 
-def get_vm_ips(vm):
+def get_custom_stat_vm_ips(vm):
     '''Принимает объект из vms_service и возвращает все IP-адреса строкой'''
     ips=[]
     vms_service = connection.system_service().vms_service()
@@ -45,7 +48,7 @@ def get_vm_ips(vm):
     return(', '.join(ips))
 
 
-def get_vm_macs(vm):
+def get_custom_stat_vm_macs(vm):
     '''Принимает объект из vms_service и возвращает все MAC-адреса строкой'''
     macs=[]
     vms_service = connection.system_service().vms_service()
@@ -55,6 +58,9 @@ def get_vm_macs(vm):
         macs.append(rds.mac.address)
     return(', '.join(macs))
 
+def get_custom_stat_vm_vcpu(vm):
+    '''Принимает объект из vms_service и возвращает количество vCPU '''
+    return(str(vm.cpu.topology.cores * vm.cpu.topology.sockets *  vm.cpu.topology.threads))
 
 def get_custom_service_df(name):
     '''Формирует массив словарей для кастомного "сервиса" и возвращает pandas dataframe для него'''
@@ -91,6 +97,11 @@ def get_custom_stat(name, obj):
         vms_service = connection.system_service().vms_service()
         vm_service = vms_service.vm_service(obj.id)
 
+        # имя и описание
+        dic['vm_name'] = obj.name
+        dic['vm_description'] = obj.description
+        dic['vm_comment'] = obj.comment
+
         # размеры дисков ВМ
         disk_attachments_service = vm_service.disk_attachments_service()
         disk_attachments = disk_attachments_service.list()
@@ -119,8 +130,29 @@ def get_custom_stat(name, obj):
         dic['vm_tags'] = tags
 
         # сетевые настройки
-        dic['vm_ips'] = get_vm_ips(obj)
-        dic['vm_macs'] = get_vm_macs(obj)
+        dic['vm_ips'] = get_custom_stat_vm_ips(obj)
+        dic['vm_macs'] = get_custom_stat_vm_macs(obj)
+
+        # vcpu
+        dic['vm_vcpu'] = get_custom_stat_vm_vcpu(obj)
+
+        # os types
+        try:
+            dic['vm_os_type'] = obj.os.type
+        except:
+            dic['vm_os_type'] = ''
+        try:
+            dic['vm_guest_os_family'] = obj.guest_operating_system.family
+        except:
+            dic['vm_guest_os_family'] = ''
+        try:
+            dic['vm_guest_os_codename'] = obj.guest_operating_system.codename
+        except:
+            dic['vm_guest_os_codename'] = ''
+        try:
+            dic['vm_guest_os_distribution'] = obj.guest_operating_system.distribution
+        except:
+            dic['vm_guest_os_distribution'] = ''
 
     return(dic)
 
@@ -140,7 +172,7 @@ def get_service_df(name):
     df = dics_to_df(dics)
     return(df)
 
-ver = '1.1.0'
+ver = '1.2.0'
 parser = argparse.ArgumentParser(description='%(prog)s - reporting tool for zvirt. (v.{})'.format(ver))
 parser.add_argument('-s', type=str,required=True, metavar='zvirt.dom', help='Zvirt engine fqdn or ip')
 parser.add_argument('-u', type=str,required=True, metavar='user@dom', help='Zvirt engine login')
