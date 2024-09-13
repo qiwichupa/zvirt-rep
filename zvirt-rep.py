@@ -124,9 +124,11 @@ def get_custom_stat(name, obj):
 
         # теги ВМ
         tags_service = vm_service.tags_service()
-        tags = ''
+        tagList = []
         for tag in tags_service.list():
-            tags = '{};{}'.format(tag.name, tags)
+            tagList.append(tag.name)
+        tagList.sort()
+        tags = ';'.join(tagList)
         dic['vm_tags'] = tags
 
         # сетевые настройки
@@ -172,7 +174,7 @@ def get_service_df(name):
     df = dics_to_df(dics)
     return(df)
 
-ver = '1.2.0'
+ver = '1.2.1'
 parser = argparse.ArgumentParser(description='%(prog)s - reporting tool for zvirt. (v.{})'.format(ver))
 parser.add_argument('-s', type=str,required=True, metavar='zvirt.dom', help='Zvirt engine fqdn or ip')
 parser.add_argument('-u', type=str,required=True, metavar='user@dom', help='Zvirt engine login')
@@ -283,3 +285,4 @@ for service in srvnames:
 writer.close()
 
 connection.close()
+
